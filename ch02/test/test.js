@@ -1,4 +1,5 @@
 var assert = require('assert');
+
 describe('2.1', function() {
   describe('Object.create', function() {
     it('should crete object from proto', function() {
