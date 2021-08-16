@@ -81,3 +81,52 @@ describe('2.1', function() {
     });
   });
 });
+
+describe('2.2', function() {
+  describe('Constructor Functions', function() {
+    function Transaction (sender, recipient) {
+      this.sender = sender;
+      this.recipient = recipient;
+    };
+    
+    function HashTransaction (sender, recipient) {
+      if (!new.target) {
+        return new HashTransaction(sender, recipient);
+      }
+      Transaction.call(this, sender, recipient);
+      this.calculateHash = function calculateHash() { 
+        const data = [this.sender, this.recipient].join('');
+        let hash = 0, i = 0;
+        while (i < data.length) {
+          hash = (hash << 5) - hash + data.charCodeAt(i++) << 0;
+        }
+        return hash**2;
+      }      
+    };
+    
+    HashTransaction.prototype = Object.create(Transaction.prototype);
+    HashTransaction.prototype.constructor = HashTransaction;
+    
+    it('should create object from constructor function', function() {
+      const tx = new HashTransaction('mharris@sender.com', 'kharris@recipient.com');
+      assert.equal(tx.sender, 'mharris@sender.com');
+      assert.equal(tx.recipient, 'kharris@recipient.com');
+      assert.equal(tx.calculateHash(), 3259099186266481000);
+    }),
+    it('should use same prototype reference', function() {
+      const tx = new HashTransaction('mharris@sender.com', 'kharris@recipient.com');
+      assert.ok(tx.__proto__ === HashTransaction.prototype);
+    }),
+    it('should add a new method object for calculateHash to each instances', function() {
+      const tx1 = new HashTransaction('mharris@sender.com', 'kharris@recipient.com');
+      const tx2 = new HashTransaction('mharris@sender.com', 'kharris@recipient.com');
+      assert.notDeepStrictEqual(tx1.calculateHash, tx2.calculateHash);      
+    }),
+    it('should be able to add method object to all instances', function() {
+      HashTransaction.prototype.foo = function foo() {}; // note difference to calculateHash
+      const tx1 = new HashTransaction('mharris@sender.com', 'kharris@recipient.com');
+      const tx2 = new HashTransaction('mharris@sender.com', 'kharris@recipient.com');
+      assert.deepStrictEqual(tx1.foo, tx2.foo);  
+    });
+  });
+});
