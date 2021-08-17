@@ -130,3 +130,64 @@ describe('2.2', function() {
     });
   });
 });
+  
+describe('2.3', function() {
+  describe('new class', function(){
+    class Transaction {
+      sender = '';
+      recipient = '';
+      funds = 0.0;
+      #feePercent = 0.6;
+      
+      constructor(sender, recipient, funds = 0.0) {
+        this.sender = sender;
+        this.recipient = recipient;
+        this.funds = funds;
+      }
+      
+      displayTransaction() {
+        return `${this.sender} -> ${this.recipient} : ${this.funds}`;
+      }
+      
+      get netTotal() {
+        return Transaction.#precisionRound(this.funds * this.#feePercent, 2);
+      }
+      
+      static #precisionRound(value, precision) {
+        return Math.round(value * Math.pow(10, precision)) / Math.pow(10, precision);
+      }
+    }
+    
+    class HashTransaction extends Transaction {
+      transactionId;
+      constructor(sender, recipient, funds = 0.0) {
+        super(sender, recipient, funds);
+        this.transactionId = this.calculateHash();
+      }
+      
+      calculateHash() {
+        const data = [this.sender, this.recipient, this.funds].join('');
+        let hash = 0, i = 0;
+        while (i < data.length) {
+          hash = (hash << 5) - hash + data.charCodeAt(i++) << 0;
+        }
+        return hash**2;
+      }
+      
+      displayTransaction() {
+        return `${this.sender} -> ${this.recipient} : ${this.funds} (${this.transactionId})`;
+      }
+    }
+    
+    it('should create object from new class', function() {
+      const tx = new HashTransaction('mharris@sender.com', 'kharris@recipient.com', 100.0);
+      assert.equal(
+        tx.displayTransaction(),
+        'mharris@sender.com -> kharris@recipient.com : 100 (1467369325350049)');
+    }),
+    it('inherit properties', function() {
+      const tx = new HashTransaction('mharris@sender.com', 'kharris@recipient.com', 100.0);
+      assert.equal(tx.netTotal, 60.0);
+    });
+  });
+});
