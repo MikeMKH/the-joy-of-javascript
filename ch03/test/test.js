@@ -91,3 +91,59 @@ describe('3.2', function() {
     assert.equal(tx.calculateHash(), 2692384909165950500);
   });
 });
+
+describe('3.3', function() {
+  describe('Object.assign', function() {
+    it('should allow for defaults to be provided', function() {
+      function foo(config = {}) {
+        config = Object.assign(
+          {
+            a: 1,
+            b: 2
+          }, config);
+        return `a=${config.a}, b=${config.b}`;
+      }
+      
+      assert.equal(foo(), "a=1, b=2");
+      assert.equal(foo({a: 100}), "a=100, b=2");
+      assert.equal(foo({b: 'Hi'}), "a=1, b=Hi");
+    }),
+    it('should allow for values to be hidden', function() {
+      const a = { a: 1 };
+      const b = {};
+      Object.defineProperty(b, 'b', {
+        value: 'secret',
+        enumerable: false
+      });
+      
+      assert.equal(Object.assign(a, b), a);
+    }),
+    it('should call set', function() {
+      var called = false;
+      const Transaction = {
+        _sender: 'mharris@sender.com',
+        
+        get sender() { return this._sender; },
+        set sender(value) {
+          called = true;
+          this._sender = Transaction.validateEmail(value);
+        }
+      };
+      
+      // REGEX from copilot
+      const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+      Transaction.validateEmail = function validateEmail(email) {
+        if (EMAIL_REGEX.test(email)) {
+          return email;
+        } else {
+          throw new Error('Invalid email address');
+        }
+      };
+      
+      assert.throws(() => Object.assign(Transaction, { sender: 'invalid' }), Error);
+      assert.ok(called);
+      
+      Object.assign(Transaction, { sender: 'valid@email.com' });
+    });
+  });
+});
