@@ -147,3 +147,72 @@ describe('3.3', function() {
     });
   });
 });
+
+describe('3.4', function() {
+  const HasA = {
+    a: 1,
+    af : function af() { return this.a + '!'; }
+  };
+  const HasB = {
+    b: 2,
+    bf : function bf() { return this.b + '?'; }
+  };
+  const HasC = {
+    c: 3,
+    cf : function cf() { return this.c + '#'; }
+  };
+  
+  it('should allow the assemble objects using mixin composition', function() {
+    const Obj = (something = 'book', someOne = 'jack') =>
+      Object.assign({something, someOne}, HasA, HasB, HasC);
+    
+    const o1 = Obj();
+    assert.equal(o1.something, 'book');
+    assert.equal(o1.someOne, 'jack');
+    
+    const o2 = Obj('ball', 'mike');
+    assert.equal(o2.something, 'ball');
+    assert.equal(o2.someOne, 'mike');
+    
+    assert.equal(o1.af(), '1!');
+    assert.equal(o2.af(), '1!');
+    assert.equal(o1.af(), o2.af());
+    
+    assert.equal(o1.bf(), '2?');
+    assert.equal(o2.bf(), '2?');
+    assert.equal(o1.bf(), o2.bf());
+    
+    assert.equal(o1.cf(), '3#');
+    assert.equal(o2.cf(), '3#');
+    assert.equal(o1.cf(), o2.cf());
+  }),
+  it('should allow the assemble objects using mixin composition using spread operator', function() {
+    const Obj = (something = 'book', someOne = 'jack') => ({
+      something,
+      someOne,
+      ...HasA,
+      ...HasB,
+      ...HasC
+    });
+    
+    const o1 = Obj();
+    assert.equal(o1.something, 'book');
+    assert.equal(o1.someOne, 'jack');
+    
+    const o2 = Obj('ball', 'mike');
+    assert.equal(o2.something, 'ball');
+    assert.equal(o2.someOne, 'mike');
+    
+    assert.equal(o1.af(), '1!');
+    assert.equal(o2.af(), '1!');
+    assert.equal(o1.af(), o2.af());
+    
+    assert.equal(o1.bf(), '2?');
+    assert.equal(o2.bf(), '2?');
+    assert.equal(o1.bf(), o2.bf());
+    
+    assert.equal(o1.cf(), '3#');
+    assert.equal(o2.cf(), '3#');
+    assert.equal(o1.cf(), o2.cf());
+  });
+});
