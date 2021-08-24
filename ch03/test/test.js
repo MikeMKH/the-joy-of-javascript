@@ -214,5 +214,41 @@ describe('3.4', function() {
     assert.equal(o1.cf(), '3#');
     assert.equal(o2.cf(), '3#');
     assert.equal(o1.cf(), o2.cf());
+  }),
+  it('should support multiple inheritance', function() {
+    const Common = {
+      c() { return 'common'; },
+      def() { return 'common'; }
+    };
+    const A1 = {
+      a1() { return 'a1'; },
+      def() { return 'a1'; }
+    };
+    const A2 = {
+      a2() { return 'a2'; },
+      def() { return 'a2'; }
+    };
+    const B1 = value => Object.assign({value}, A1, A2, Common);
+    const B2 = value => Object.assign({value}, Common, A1, A2);
+    const B3 = value => Object.assign({value}, Common, A2, A1);
+    
+    const b1 = B1('B1');
+    const b2 = B2('B2');
+    const b3 = B3('B3');
+    
+    assert.equal(b1.c(), 'common');
+    assert.equal(b1.a1(), 'a1');
+    assert.equal(b1.a2(), 'a2');
+    assert.equal(b1.def(), 'common');
+    
+    assert.equal(b2.c(), 'common');
+    assert.equal(b2.a1(), 'a1');
+    assert.equal(b2.a2(), 'a2');
+    assert.equal(b2.def(), 'a2');
+    
+    assert.equal(b3.c(), 'common');
+    assert.equal(b3.a1(), 'a1');
+    assert.equal(b3.a2(), 'a2');
+    assert.equal(b3.def(), 'a1');  
   });
 });
