@@ -252,3 +252,39 @@ describe('3.4', function() {
     assert.equal(b3.def(), 'a1');  
   });
 });
+
+describe('3.5', function() {
+  const HasA = { af: function af() { return 'a'; } };
+  const HasB = { bf: function bf() { return 'b'; } };
+  const HasValues = (keys, options = { a: 1, b: 2 }) => ({
+    values: function values() { return keys.join(','); },
+    others: function others() {
+      let result = '';
+      for (const [key, value] of Object.entries(options)) {
+        result += `${key}:${value},`;
+      }
+      return result.slice(0, -1);
+    }
+  });
+  
+  class A {
+    foo() { return 'foo'; }
+  };
+  class B {
+    bar() { return 'bar'; }
+  }
+  
+  it('should allow for mixin to extend', function() {
+    const a = Object.assign(A.prototype, HasA);
+    assert.equal(a.af(), 'a');
+    assert.equal(a.foo(), 'foo');
+  }),
+  it('should allow for multiple mixin to extend', function() {
+    const b = Object.assign(B.prototype, HasA, HasB, HasValues(['foo', 'bar']));
+    assert.equal(b.af(), 'a');
+    assert.equal(b.bf(), 'b');
+    assert.equal(b.bar(), 'bar');
+    assert.equal(b.values(), 'foo,bar');
+    assert.equal(b.others(), 'a:1,b:2');
+  });
+});
