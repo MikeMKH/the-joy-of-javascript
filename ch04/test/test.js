@@ -28,7 +28,7 @@ describe('4.1', function() {
       });
       
       assert.equal(NameFactory('John', 'Doe').greet('Jane'), 'Hello Jane. I am John Doe');
-      assert.equal(NameFactory('Matt', 'Skiba').name, 'John Doe');
+      assert.equal(NameFactory('Matt', 'Skiba').name, 'Matt Skiba');
     });
   });
 });
