@@ -32,3 +32,27 @@ describe('4.1', function() {
     });
   });
 });
+
+describe('4.2', function() {
+  const numbers = [...Array(10).keys()];
+  describe('imperative', function() {
+    it('should be able to filter, map, and sum values', function() {
+      let sum = 0;
+      for(const number of numbers) {
+        if(number % 2 === 0) {
+          sum += (number * 3);
+        }
+      }
+      assert.equal(sum, 60);
+    });
+  }),
+  describe('functional', function() {
+    it('should be able to filter, map, and sum values', function() {
+      const sum = numbers
+        .filter(x => x % 2 === 0)
+        .map(x => x * 3)
+        .reduce((m, x) => m + x);
+      assert.equal(sum, 60);
+    });
+  });
+});
