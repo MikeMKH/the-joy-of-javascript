@@ -101,8 +101,8 @@ describe('4.3', function() {
       it('should be able to compute a cipher', function() {
         assert.equal(computeCipher('hello world'), 3218816525823026700);
         assert.equal(computeCipher('John Doe'), 1869562306066055700);
-        assert.equal(computeCipher('John Doe'), 1869562306066055700);
         assert.equal(computeCipher('the quick brown fox jump over the box'), 258019758144341220);
+        assert.equal(computeCipher('John Doe'), 1869562306066055700);
       });
     }),
     describe('assemble', function() {
