@@ -1,6 +1,15 @@
 var assert = require('assert');
 const compose2 = (f, g) => (...args) => f(g(...args));
 const compose = (...fns) => fns.reduce(compose2);
+const curry = fn => (...args1) =>
+  args1.length === fn.length
+  ? fn(...args1)
+  : (...args2) => {
+      const args = [...args1, ...args2];
+      return args.length >= fn.length
+      ? fn(...args)
+      : curry(fn)(...args);
+};
 
 describe('4.0', function() {
   it('functions are objects', function() {
@@ -116,6 +125,23 @@ describe('4.3', function() {
         const computeHash = compose(computeCipher, assemble(['first', 'last']));
         assert.equal(computeHash({first: 'John', last: 'Doe', other: 'stuff'}), 1869562306066055700);
       });
+    });
+  });
+});
+
+describe('4.4', function() {
+  describe('curry', function() {
+    it('should be able to curry a function', function() {
+      const add = (x, y) => x + y;
+      const add1 = curry(add)(1);
+      assert.equal(add1(2), 3);
+    });
+  }),
+  describe('prop', function() {
+    const prop = curry((key, obj) => obj[key]);
+    it('should be able to get a property', function() {
+      const getName = prop('name');
+      assert.equal(getName({name: 'John Doe', something: 'else'}), 'John Doe');
     });
   });
 });
