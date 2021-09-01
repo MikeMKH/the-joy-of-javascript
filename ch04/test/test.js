@@ -1,3 +1,4 @@
+const { equal } = require('assert');
 var assert = require('assert');
 const compose2 = (f, g) => (...args) => f(g(...args));
 const compose = (...fns) => fns.reduce(compose2);
@@ -142,6 +143,117 @@ describe('4.4', function() {
     it('should be able to get a property', function() {
       const getName = prop('name');
       assert.equal(getName({name: 'John Doe', something: 'else'}), 'John Doe');
+    });
+  });
+});
+
+describe('4.5', function () {
+  describe('Money', function() {
+    const Money = curry((currency, amount) =>
+      compose(
+        Object.seal,
+        Object.freeze,
+      )(Object.assign(Object.create(null), {
+        amount,
+        currency,
+        equals: other => other.currency === currency && other.amount === amount,
+        toString: () => `${amount} ${currency}`,
+        valueOf: () => amount,
+        compareTo: other => amount - other.amount,
+        round: (precision = 2) => Money(currency, precisionRound(amount, precision)),
+        plus: other => Money(currency, amount + other.amount),
+        minus: other => Money(currency, amount - other.amount),
+        times: other => Money(currency, amount * other.amount),
+        asNegative: () => Money(currency, -amount)
+    })));
+    
+    Money.zero = (currency = 'USD') => Money(currency, 0);
+    Money.sum = (...money) => money.reduce((m1, m2) => m1.plus(m2));
+    Money.subtract = (...money) => money.reduce((m1, m2) => m1.minus(m2));
+    Money.multiply = (...money) => money.reduce((m1, m2) => m1.times(m2));
+    
+    function precisionRound(number, precision) {
+      const factor = Math.pow(10, precision);
+      return Math.round(number * factor) / factor;
+    };
+    
+    it('should be summable', function() {
+      const sum = Money.sum(Money.zero(), Money('USD', 1), Money('USD', 2));
+      assert.equal(sum.toString(), '3 USD');
+    }),
+    it('should be subtractable', function() {
+      const difference = Money.subtract(Money('USD', 1), Money('USD', 2));
+      assert.equal(difference.toString(), '-1 USD');
+    }),
+    it('should be multipliable', function() {
+      const product = Money.multiply(Money('USD', 1), Money('USD', 2));
+      assert.equal(product.toString(), '2 USD');
+    }),
+    it('should be able to be rounded', function() {
+      const rounded = Money('USD', 1.234).round();
+      assert.equal(rounded.toString(), '1.23 USD');
+      
+      assert.equal(Money('USD', 1.234).round(0).toString(), '1 USD');
+    }),
+    it('should be able to be compared', function() {
+      const oneDollar = Money('USD', 1);
+      const twoDollars = Money('USD', 2);
+      assert.equal(oneDollar.compareTo(twoDollars), -1);
+      assert.equal(twoDollars.compareTo(oneDollar), 1);
+      assert.equal(oneDollar.compareTo(oneDollar), 0);
+    }),
+    it('should be able to be negated', function() {
+      const negative = Money('USD', 1).asNegative();
+      assert.equal(negative.toString(), '-1 USD');
+    }),
+    it('should be able to be added', function() {
+      const sum = Money('USD', 1).plus(Money('USD', 2));
+      assert.equal(sum.toString(), '3 USD');
+    }),
+    it('should be able to be subtracted', function() {
+      const difference = Money('USD', 1).minus(Money('USD', 2));
+      assert.equal(difference.toString(), '-1 USD');
+    }),
+    it('should be able to be multiplied', function() {
+      const product = Money('USD', 1).times(Money('USD', 2));
+      assert.equal(product.toString(), '2 USD');
+    }),
+    it('should be able to be compared to zero', function() {
+      const zero = Money.zero();
+      const one = Money('USD', 1);
+      assert.equal(zero.compareTo(one), -1);
+      assert.equal(one.compareTo(zero), 1);
+      assert.equal(zero.compareTo(zero), 0);
+    }),
+    it('should be usable as a number', function() {
+      const one = Money('USD', 1);
+      const two = Money('USD', 2);
+      assert.equal(one, 1);
+      assert.equal(one + 2, 3);
+      assert.equal(one * two, 2);
+      assert.equal(two * two * 3.2, 12.8);
+    }),
+    it('should be usable as a string', function() {
+      const one = Money('USD', 1);
+      const two = Money('USD', 2);
+      assert.equal(one.toString(), '1 USD');
+      assert.equal(two.toString(), '2 USD');
+    }),
+    it('should be usable as a boolean', function() {
+      const zero = Money.zero();
+      const one = Money('USD', 1);
+      assert.equal(zero, false);
+      assert.equal(one, true);
+    }),
+    it('should be usable as an object', function() {
+      const one = Money('USD', 1);
+      assert.equal(one.amount, 1);
+      assert.equal(one.currency, 'USD');
+    }),
+    it('should be usable as a map', function() {
+      const one = Money('USD', 1);
+      assert.equal(one['amount'], 1);
+      assert.equal(one['currency'], 'USD');
     });
   });
 });
