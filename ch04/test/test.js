@@ -257,3 +257,28 @@ describe('4.5', function () {
     });
   });
 });
+
+describe('4.6', function() {
+  describe('point-free', function() {
+    const count = s => s.length;
+    const split = curry((c, s) => s.split(c));
+    
+    it('should be able count words in a string', function() {
+      const countWords = compose(
+        count,
+        split(' '),
+      );
+      
+      assert.equal(countWords('Hello world'), 2);
+    }),
+    it('should be able count blocks in JSON', function() {
+      const countWords = compose(
+        count,
+        JSON.parse
+      );
+      
+      var arr = [1, 2, 3];
+      assert.equal(countWords(JSON.stringify(arr)), 3);
+    });
+  });
+});
