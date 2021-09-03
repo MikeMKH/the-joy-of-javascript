@@ -282,3 +282,36 @@ describe('4.6', function() {
     });
   });
 });
+
+describe('4.7', function() {
+  const numbers = [...Array(100).keys()];
+  const expected = 161700;
+  
+  const even = n => n % 2 === 0;
+  const square = n => n * n;
+  const sum = (a, b) => a + b;
+  
+  describe('flow using array functions', function() {  
+    it('should sum even numbers squared', function() {
+      const result = numbers
+        .filter(even)
+        .map(square)
+        .reduce(sum);
+      assert.equal(result, expected);
+    });
+  }),
+  describe('flow using composed functions', function() {
+    const filter = curry((f, a) => a.filter(f));
+    const map = curry((f, a) => a.map(f));
+    const reduce = curry((f, a) => a.reduce(f));
+    
+    it('should sum even numbers squared', function() {
+      const result = compose(
+        reduce(sum),
+        map(square),
+        filter(even),
+      )(numbers);
+      assert.equal(result, expected);
+    });
+  });
+});
