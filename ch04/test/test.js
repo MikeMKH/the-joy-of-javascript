@@ -2,15 +2,19 @@ const { equal } = require('assert');
 var assert = require('assert');
 const compose2 = (f, g) => (...args) => f(g(...args));
 const compose = (...fns) => fns.reduce(compose2);
+const pipe = (...fns) => fns.reduceRight(compose2);
 const curry = fn => (...args1) =>
-  args1.length === fn.length
-  ? fn(...args1)
-  : (...args2) => {
-      const args = [...args1, ...args2];
-      return args.length >= fn.length
-      ? fn(...args)
-      : curry(fn)(...args);
+args1.length === fn.length
+? fn(...args1)
+: (...args2) => {
+  const args = [...args1, ...args2];
+  return args.length >= fn.length
+  ? fn(...args)
+  : curry(fn)(...args);
 };
+const filter = curry((f, a) => a.filter(f));
+const map = curry((f, a) => a.map(f));
+const reduce = curry((f, a) => a.reduce(f));
 
 describe('4.0', function() {
   it('functions are objects', function() {
@@ -300,17 +304,45 @@ describe('4.7', function() {
       assert.equal(result, expected);
     });
   }),
-  describe('flow using composed functions', function() {
-    const filter = curry((f, a) => a.filter(f));
-    const map = curry((f, a) => a.map(f));
-    const reduce = curry((f, a) => a.reduce(f));
-    
+  describe('flow using composed functions', function() {    
     it('should sum even numbers squared', function() {
       const result = compose(
         reduce(sum),
         map(square),
         filter(even),
       )(numbers);
+      assert.equal(result, expected);
+    });
+  });
+});
+
+describe('4.8', function() {
+  describe('pipe', function() {
+    it('should flow data from top to bottom', function() {
+      const count = s => s.length;
+      const split = curry((c, s) => s.split(c));
+      
+      const countWords = pipe(
+        split(' '),
+        count
+        );
+        
+        assert.equal(countWords('Hello world'), 2);
+      }),
+      it('should sum even numbers squared', function() {
+      const numbers = [...Array(100).keys()];
+      const expected = 161700;
+      
+      const even = n => n % 2 === 0;
+      const square = n => n * n;
+      const sum = (a, b) => a + b;
+      
+      const result = pipe(
+        filter(even),
+        map(square),
+        reduce(sum)
+      )(numbers);
+      
       assert.equal(result, expected);
     });
   });
