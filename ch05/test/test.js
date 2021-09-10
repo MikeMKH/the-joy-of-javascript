@@ -76,3 +76,37 @@ describe('5.1', function() {
     });
   });
 });
+
+describe('5.2', function() {
+  describe('flat', function() {
+    it('should flatten an array', function() {
+      assert.deepEqual(
+        [['a', 'b'], ['c']].flat(),
+        ['a', 'b', 'c']
+      );
+    }),
+    it('should flatten an array to a given depth', function() {
+      assert.deepEqual(
+        [[[[1]]]].flat(2),
+        [[1]]
+      );
+    }),
+    it('should flatten a deep array', function() {
+      assert.deepEqual(
+        [[[[[[[[[['deep']]]]]]]]]].flat(Infinity),
+        ['deep']
+      );
+    })
+  }),
+  describe('flatMap', function() {
+    it('should flatten and apply map', function() {
+      assert.deepEqual([[1], [2], [3]].flatMap(x => x * 2), [2, 4, 6]);
+    }),
+    it('should map and flatten function results', function() {
+      assert.deepEqual(
+        [1, 2, 3].flatMap(x => [x, x * 2]),
+        [1, 2, 2, 4, 3, 6]
+      );
+    });
+  });
+})
