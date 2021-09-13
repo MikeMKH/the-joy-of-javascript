@@ -16,6 +16,14 @@ const filter = curry((f, a) => a.filter(f));
 const map = curry((f, a) => a.map(f));
 const reduce = curry((f, a) => a.reduce(f));
 
+Function.prototype.map = function (f) {
+  return compose(f, this);
+};
+
+const unique = letters => Array.from(new Set(letters));
+const join = arr => arr.join('');
+const toUpper = str => str.toUpperCase();
+
 describe('5.1', function() {
   describe('applyIfNotNull', function() {
     const applyIfNotNull = curry((fn, data) =>
@@ -62,11 +70,7 @@ describe('5.1', function() {
         this.fill(value);
       }
     }
-    it('should chain', function() {
-      const unique = letters => Array.from(new Set(letters));
-      const join = arr => arr.join('');
-      const toUpper = str => str.toUpperCase();
-      
+    it('should chain', function() {      
       const result = Id.of('Mike Harris')
         .map(unique)
         .map(join)
@@ -109,4 +113,17 @@ describe('5.2', function() {
       );
     });
   });
-})
+});
+
+describe('5.3', function() {
+  describe('map / compose correspondence', function() {
+    it('should produce the same result', function() {
+      const m = unique.map(join).map(toUpper);
+      const c = compose(toUpper, join, unique);
+      
+      assert.deepEqual(m('Mike Harris'), c('Mike Harris'));
+      assert.deepEqual(m('aabbccdd'), c('aabbccdd'));
+      assert.deepEqual(m('aabbccdd'), 'ABCD');
+    })
+  })
+});
