@@ -20,6 +20,7 @@ Function.prototype.map = function (f) {
   return compose(f, this);
 };
 
+const identity = x => x;
 const unique = letters => Array.from(new Set(letters));
 const join = arr => arr.join('');
 const toUpper = str => str.toUpperCase();
@@ -51,9 +52,6 @@ describe('5.1', function() {
   }),
   describe('Array as a box', function() {
     it('should chain', function() {
-      const unique = letters => Array.from(new Set(letters));
-      const join = arr => arr.join('');
-      const toUpper = str => str.toUpperCase();
       
       const result = Array.of('Mike Harris')
         .map(unique)
@@ -125,5 +123,58 @@ describe('5.3', function() {
       assert.deepEqual(m('aabbccdd'), c('aabbccdd'));
       assert.deepEqual(m('aabbccdd'), 'ABCD');
     })
+  })
+});
+
+describe('5.4', function() {
+  describe('functor', function() {
+   it('should have an identity', function() {
+      assert.equal([1].map(identity), 1);
+      assert.equal(['hello world'].map(identity), 'hello world');
+   }),
+   it('should have composition', function() {
+     const square = x => x * x;
+     const times2 = x => x * 2;
+     const add1 = x => x + 1;
+     
+     const r1 = [1, 2, 3, 4, 5].map(times2).map(square).map(add1);
+     assert.deepEqual(r1, [5, 17, 37, 65, 101]);
+     
+     const r2 = [1, 2, 3, 4, 5].map(compose(add1, square, times2));
+     assert.deepEqual(r2, [5, 17, 37, 65, 101]);
+     
+     assert.deepEqual(r1, r2);
+   });
+   
+   describe('Id', function() {
+     const Functor = {
+       map: function(f = identity) {
+         return this.constructor.of(f(this.get()));
+       }    
+     };
+     
+     class Id extends Array {
+       constructor(value) {
+         super(1);
+         this.fill(value);
+       }
+       static of(value) {
+         return new Id(value);
+       }
+       get() {
+         return this[0];
+       }
+     }
+     Object.assign(Id, Functor);
+     
+     it('should have a map', function() {
+       const result = Id.of('hello world').map(unique).map(join).map(toUpper).get();
+       assert.equal(result, 'HELO WRD');
+     }),
+     it('should have an identity', function() {
+       const result = Id.of('hello world').map(identity).get();
+       assert.equal(result, 'hello world');
+     });
+  });
   })
 });
