@@ -20,6 +20,24 @@ Function.prototype.map = function (f) {
   return compose(f, this);
 };
 
+const Functor = {
+  map: function(f = identity) {
+    return this.constructor.of(f(this.get()));
+  }    
+};
+
+const Monad = Object.assign({}, Functor, {
+  flatMap: function(f = identity) {
+    return this.map(f).get();
+  },
+  chain: function(f = identity) {
+    return this.flatMap(f);
+  },
+  bind: function(f = identity) {
+    return this.flatMap(f);
+  }
+});
+
 const identity = x => x;
 const unique = letters => Array.from(new Set(letters));
 const join = arr => arr.join('');
@@ -127,54 +145,83 @@ describe('5.3', function() {
 });
 
 describe('5.4', function() {
+  
+  class Id extends Array {
+    constructor(value) {
+      super(1);
+      this.fill(value);
+    }
+    static of(value) {
+      return new Id(value);
+    }
+    get() {
+      return this[0];
+    }
+  }
+  
   describe('functor', function() {
-   it('should have an identity', function() {
+    it('should have an identity', function() {
       assert.equal([1].map(identity), 1);
       assert.equal(['hello world'].map(identity), 'hello world');
-   }),
-   it('should have composition', function() {
-     const square = x => x * x;
-     const times2 = x => x * 2;
-     const add1 = x => x + 1;
-     
-     const r1 = [1, 2, 3, 4, 5].map(times2).map(square).map(add1);
-     assert.deepEqual(r1, [5, 17, 37, 65, 101]);
-     
-     const r2 = [1, 2, 3, 4, 5].map(compose(add1, square, times2));
-     assert.deepEqual(r2, [5, 17, 37, 65, 101]);
-     
-     assert.deepEqual(r1, r2);
-   });
-   
-   describe('Id', function() {
-     const Functor = {
-       map: function(f = identity) {
-         return this.constructor.of(f(this.get()));
-       }    
-     };
-     
-     class Id extends Array {
-       constructor(value) {
-         super(1);
-         this.fill(value);
-       }
-       static of(value) {
-         return new Id(value);
-       }
-       get() {
-         return this[0];
-       }
-     }
-     Object.assign(Id, Functor);
-     
-     it('should have a map', function() {
-       const result = Id.of('hello world').map(unique).map(join).map(toUpper).get();
-       assert.equal(result, 'HELO WRD');
-     }),
-     it('should have an identity', function() {
-       const result = Id.of('hello world').map(identity).get();
-       assert.equal(result, 'hello world');
-     });
+    }),
+    it('should have composition', function() {
+      const square = x => x * x;
+      const times2 = x => x * 2;
+      const add1 = x => x + 1;
+      
+      const r1 = [1, 2, 3, 4, 5].map(times2).map(square).map(add1);
+      assert.deepEqual(r1, [5, 17, 37, 65, 101]);
+      
+      const r2 = [1, 2, 3, 4, 5].map(compose(add1, square, times2));
+      assert.deepEqual(r2, [5, 17, 37, 65, 101]);
+      
+      assert.deepEqual(r1, r2);
+    });
+    describe('Id', function() {
+      Object.assign(Id.prototype, Functor);
+      
+      it('should have a map', function() {
+        const result = Id.of('hello world').map(unique).map(join).map(toUpper).get();
+        assert.equal(result, 'HELO WRD');
+      }),
+      it('should have an identity', function() {
+        const result = Id.of('hello world').map(identity).get();
+        assert.equal(result, 'hello world');
+      });
+    });
+  }),
+  describe('monad', function() {
+    describe('Id', function() {
+      Object.assign(Id.prototype, Monad);
+      
+      const f = x => Id.of(x ** 2);
+      
+      it('should have a map', function() {
+        assert.equal(Id.of(2).map(x => x ** 2).get(), 4);
+      }),
+      it('should have a flatMap', function() {
+        assert.equal(Id.of(2).flatMap(f).get(), 4);
+      }),
+      it('should have a chain', function() {
+        assert.equal(Id.of(2).chain(f).get(), 4);
+      }),
+      it('should have a bind', function() {
+        assert.equal(Id.of(2).bind(f).get(), 4);
+      }),
+      it('should have left identity', function() {
+        assert.deepEqual(Id.of(2).flatMap(f), f(2));
+      }),
+      it('should have right identity', function() {
+        assert.deepEqual(Id.of(2).flatMap(x => Id.of(x)), Id.of(2));
+      }),
+      it('should be associative', function() {
+        const g = x => Id.of(x * 2);
+        const h = x => Id.of(x + 3);
+        
+        const r1 = Id.of(2).flatMap(f).flatMap(g).flatMap(h);
+        const r2 = Id.of(2).flatMap(x => f(x).flatMap(y => g(y).flatMap(h)));
+        assert.deepEqual(r1, r2);
+      });
+    });
   });
-  })
 });
