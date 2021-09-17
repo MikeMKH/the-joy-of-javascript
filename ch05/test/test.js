@@ -225,3 +225,51 @@ describe('5.4', function() {
     });
   });
 });
+
+describe('5.5', function() {
+  describe('ADT', function() {
+    describe('Pair', function() {
+      const Pair = (first, second) =>
+        compose(Object.seal, Object.freeze)({
+          first,
+          second,
+          toString: () => `[${first} ${second}]`
+      });
+      
+      it('should have a toString', function() {
+        const p = Pair(1, 2);
+        assert.equal(p.toString(), '[1 2]');
+      }),
+      it('should have a first', function() {
+        const p = Pair(1, 2);
+        assert.equal(p.first, 1);
+      }),
+      it('should have a second', function() {
+        const p = Pair(1, 2);
+        assert.equal(p.second, 2);
+      }),
+      it('should be return able from a function', function() {
+        const parts = (x, d) => Pair(Math.floor(x / d), x % d);
+        const tenOverThree = parts(10, 3);
+        assert.equal(tenOverThree.first, 3);
+        assert.equal(tenOverThree.second, 1);
+      });
+    }),
+    describe('Choice', function() {
+      it('should return not false', function() {
+        assert.equal(1, 1 || null);
+        assert.equal(1, null || 1);
+        assert.equal(1, false || 1);
+        assert.equal(1, 0 || 1);
+        assert.equal(1, '' || 1);
+      }),
+      it('should return not null', function() {
+        assert.equal(1, 1 ?? null);
+        assert.equal(1, null ?? 1);
+        assert.equal('', null ?? '');
+        assert.equal(false, null ?? false);
+        assert.equal(false, false ?? true);
+      });
+    });
+  })
+})
