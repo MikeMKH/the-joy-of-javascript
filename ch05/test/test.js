@@ -1,5 +1,6 @@
 const { equal } = require('assert');
 var assert = require('assert');
+const { get } = require('http');
 const compose2 = (f, g) => (...args) => f(g(...args));
 const compose = (...fns) => fns.reduce(compose2);
 const pipe = (...fns) => fns.reduceRight(compose2);
@@ -270,6 +271,98 @@ describe('5.5', function() {
         assert.equal(false, null ?? false);
         assert.equal(false, false ?? true);
       });
-    });
-  })
-})
+    }),
+    describe('Validation', function() {
+      class Validation {
+        #val;
+        constructor(value) {
+          this.#val = value;
+          if (![Success.name, Failure.name].includes(new.target.name)) {
+            throw new Error('Invalid constructor');
+          }
+        }
+        
+        static of(value) {
+          return new Validation(value);
+        }
+        
+        static Success(value) {
+          return Success.of(value);
+        }
+        
+        static Failure(value) {
+          return Failure.of(value);
+        }
+          
+        get() {
+          return this.#val;
+        }
+        
+        get isSuccess() {
+          return false;
+        }
+        
+        get isFailure() {
+          return false;
+        }
+        
+        getOrElse(other) {
+          return this.isSuccess ? this.get() : other;
+        }
+        
+        toString() {
+          return `${this.constructor.name} (${this.#val})`;
+        }
+      }
+      
+      class Success extends Validation {
+        static of(value) {
+          return new Success(value);
+        }
+        
+        get isSuccess() {
+          return true;
+        }
+      }
+      
+      class Failure extends Validation {
+        static of(value) {
+          return new Failure(value);
+        }
+        
+        get isFailure() {
+          return true;
+        }
+        
+        get() {
+          throw new Error('Cannot get value of Failure');
+        }
+      }
+      
+      describe('Success', function() {
+        const sut = Success.of(1);
+        it('should return true for isSuccess', function() {
+          assert.equal(sut.isSuccess, true);
+        }),
+        it('should return false for isFailure', function() {
+          assert.equal(sut.isFailure, false);
+        }),
+        it('should return the value', function() {
+          assert.equal(sut.get(), 1);
+        });
+      }),
+      describe('Failure', function() {
+        const sut = Failure.of(1);
+        it('should return false for isSuccess', function() {
+          assert.equal(sut.isSuccess, false);
+        }),
+        it('should return true for isFailure', function() {
+          assert.equal(sut.isFailure, true);
+        }),
+        it('should throw an error', function() {
+          assert.throws(() => sut.get());
+        });
+      });
+    })
+  });
+});
