@@ -359,7 +359,7 @@ describe('5.5', function() {
       describe('Success', function() {
         const sut = Success.of(1);
         it('should return true for isSuccess', function() {
-          assert.equal(sut.isSuccess, true);
+          assert.ok(sut.isSuccess);
         }),
         it('should return false for isFailure', function() {
           assert.equal(sut.isFailure, false);
@@ -374,7 +374,7 @@ describe('5.5', function() {
           assert.equal(sut.isSuccess, false);
         }),
         it('should return true for isFailure', function() {
-          assert.equal(sut.isFailure, true);
+          assert.ok(sut.isFailure);
         }),
         it('should throw an error', function() {
           assert.throws(() => sut.get());
@@ -393,28 +393,28 @@ describe('5.5', function() {
           
         describe('isEven', function() {
           it('should return Success for even values', function() {
-            assert.equal(isEven(2).isSuccess, true);
+            assert.ok(isEven(2).isSuccess);
           }),
           it('should return Failure for odd values', function() {
-            assert.equal(isEven(3).isFailure, true);
+            assert.ok(isEven(3).isFailure);
           });
         }),
         describe('isPositive', function() {
           it('should return Success for positive values', function() {
-            assert.equal(isPositive(2).isSuccess, true);
+            assert.ok(isPositive(2).isSuccess);
           }),
           it('should return Failure for negative values', function() {
-            assert.equal(isPositive(-1).isFailure, true);
+            assert.ok(isPositive(-1).isFailure);
           });
         }),
         describe('compose isEven with isPositive', function() {
           const validator = n => Validation.of(n).flatMap(isEven).flatMap(isPositive);
           
           it('should return Success for even positive values', function() {
-            assert.equal(validator(2).isSuccess, true);
+            assert.ok(validator(2).isSuccess);
           }),
           it('should return Failure for odd positive values', function() {
-            assert.equal(validator(3).isFailure, true);
+            assert.ok(validator(3).isFailure);
           });
         });
       });
