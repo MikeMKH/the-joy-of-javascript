@@ -39,6 +39,16 @@ const Monad = Object.assign({}, Functor, {
   }
 });
 
+const NoopFunctor = {
+  map(f) { return this; }
+};
+
+const NoopMonad = {
+  flatMap(f) { return this; },
+  chain(f) { return this; },
+  bind(f) { return this; }
+};
+
 const identity = x => x;
 const unique = letters => Array.from(new Set(letters));
 const join = arr => arr.join('');
@@ -283,7 +293,7 @@ describe('5.5', function() {
         }
         
         static of(value) {
-          return new Validation(value);
+          return Success.of(value);
         }
         
         static Success(value) {
@@ -339,6 +349,13 @@ describe('5.5', function() {
         }
       }
       
+      
+      Object.assign(Failure.prototype, NoopFunctor);
+      Object.assign(Success.prototype, Functor);
+      
+      Object.assign(Failure.prototype, NoopMonad);
+      Object.assign(Success.prototype, Monad);
+      
       describe('Success', function() {
         const sut = Success.of(1);
         it('should return true for isSuccess', function() {
@@ -362,7 +379,45 @@ describe('5.5', function() {
         it('should throw an error', function() {
           assert.throws(() => sut.get());
         });
+      }),
+      describe('composing', function() {
+        const isEven = n =>
+          n % 2 === 0
+          ? Success.of(n)
+          : Failure.of(`${n} is not even`);
+          
+        const isPositive = n =>
+          n > 0
+          ? Success.of(n)
+          : Failure.of(`${n} is not positive`);
+          
+        describe('isEven', function() {
+          it('should return Success for even values', function() {
+            assert.equal(isEven(2).isSuccess, true);
+          }),
+          it('should return Failure for odd values', function() {
+            assert.equal(isEven(3).isFailure, true);
+          });
+        }),
+        describe('isPositive', function() {
+          it('should return Success for positive values', function() {
+            assert.equal(isPositive(2).isSuccess, true);
+          }),
+          it('should return Failure for negative values', function() {
+            assert.equal(isPositive(-1).isFailure, true);
+          });
+        }),
+        describe('compose isEven with isPositive', function() {
+          const validator = n => Validation.of(n).flatMap(isEven).flatMap(isPositive);
+          
+          it('should return Success for even positive values', function() {
+            assert.equal(validator(2).isSuccess, true);
+          }),
+          it('should return Failure for odd positive values', function() {
+            assert.equal(validator(3).isFailure, true);
+          });
+        });
       });
-    })
+    });
   });
 });
