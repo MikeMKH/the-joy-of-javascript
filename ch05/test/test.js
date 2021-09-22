@@ -3,6 +3,8 @@ var assert = require('assert');
 const { get } = require('http');
 const compose2 = (f, g) => (...args) => f(g(...args));
 const compose = (...fns) => fns.reduce(compose2);
+const composeM2 = (f, g) => (...args) => g(...args).flatMap(f);
+const composeM = (...Ms) => Ms.reduce(composeM2);
 const pipe = (...fns) => fns.reduceRight(compose2);
 const curry = fn => (...args1) =>
 args1.length === fn.length
@@ -407,8 +409,18 @@ describe('5.5', function() {
             assert.ok(isPositive(-1).isFailure);
           });
         }),
-        describe('compose isEven with isPositive', function() {
+        describe('compose isEven with isPositive using flatMap', function() {
           const validator = n => Validation.of(n).flatMap(isEven).flatMap(isPositive);
+          
+          it('should return Success for even positive values', function() {
+            assert.ok(validator(2).isSuccess);
+          }),
+          it('should return Failure for odd positive values', function() {
+            assert.ok(validator(3).isFailure);
+          });
+        }),
+        describe('compose isEven with isPositive using composeM', function() {
+          const validator = composeM(isEven, isPositive, Validation.of);
           
           it('should return Success for even positive values', function() {
             assert.ok(validator(2).isSuccess);
@@ -418,6 +430,17 @@ describe('5.5', function() {
           });
         });
       });
+    });
+  }),
+  describe('compose with map', function() {
+    const compose2 = (f, g) => g.map(f);
+    const compose = (...fns) => fns.reduce(compose2);
+    
+    it('should compose functions', function() {
+      const f = x => x + 1;
+      const g = x => x * 2;
+      const h = compose(f, g);
+      assert.equal(h(1), 3);
     });
   });
 });
