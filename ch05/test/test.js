@@ -428,6 +428,23 @@ describe('5.5', function() {
           it('should return Failure for odd positive values', function() {
             assert.ok(validator(3).isFailure);
           });
+        }),
+        describe('safeDivideBy', function() {
+          const nonZero = n => n === 0 ? Failure.of('Number zero not allowed') : Success.of(n);
+          const notNan = n => isNaN(n) ? Failure.of('Number NaN not allowed') : Success.of(n);
+          const divideBy = curry((d, n) => n / d);
+          const safeDivideBy = curry((d, n) =>
+            Success.of(d).flatMap(nonZero).flatMap(notNan).map(d => divideBy(d, n)));
+          
+          it('should divide by 2', function(){
+            assert.equal(safeDivideBy(2)(10).get(), 5);
+          }),
+          it('should divide by 0', function(){
+            assert.equal(safeDivideBy(0)(10).isFailure, true);
+          }),
+          it('should divide by NaN', function(){
+            assert.equal(safeDivideBy(NaN)(10).isFailure, true);
+          });
         });
       });
     });
