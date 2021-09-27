@@ -461,3 +461,33 @@ describe('5.5', function() {
     });
   });
 });
+
+describe('5.6', function() {
+  const { map } = Functor;
+  const apply = curry((fn, F) => map.call(F, fn));
+  Array.prototype.get = function() { return this[0]; };
+  
+  describe('dynamic binding', function() {
+    it('should allow call', function() {
+      assert.deepEqual(map.call([1], x => x * 2), [2]);
+      assert.deepEqual(map.call([42], x => x + 1), [43]);
+    });
+  }),
+  describe('apply', function() {
+    it('should call function', function() {
+      let spy = false;
+      const f = function f() { spy = true; };
+      
+      apply(f, []);
+      assert.ok(spy);
+    }),
+    it('should apply composer without calling composeM', function() {
+      const result = compose(
+        apply(x => x + 1),
+        apply(x => x * 2)
+      )([1]);
+      
+      assert.deepEqual(result, [3]);
+    });
+  });
+});
