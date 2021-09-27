@@ -1,0 +1,14 @@
+{
+  "name": "ch06",
+  "version": "1.0.0",
+  "description": "chapter 6",
+  "main": "test/test.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Mike Harris",
+  "license": "ISC",
+  "dependencies": {
+    "mocha": "^9.1.2"
+  }
+}
