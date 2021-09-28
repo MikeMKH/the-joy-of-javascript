@@ -39,7 +39,38 @@ describe('define class in an object namespace', function() {
   }
   
   it('should calculate netTotal', function() {
-    let myObject = new MyObjectClass.domain.MyObject('sender', 'receiver', 100.0);
-    assert.equal(myObject.netTotal(), 60.0);    
+    const myObject = new MyObjectClass.domain.MyObject('sender', 'receiver', 100.0);
+    assert.equal(myObject.netTotal(), 60.0); 
   })
+}),
+describe('IIFE', function() {
+  (function(namespace) {
+    const VERSION = '1.0.0';
+    namespace.domain = {};
+    namespace.domain.MyObject = class {
+      #feePercent = 0.6;
+      
+      constructor(sender, receiver, funds = 0.0) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.funds = Number(funds);
+        this.timestamp = Date.now();
+        this.netTotal = netTotal(this.funds, this.#feePercent);
+      }
+    }
+    
+    function precisionRounding(number, precision) {
+      const factor = Math.pow(10, precision);
+      return Math.round(number * factor) / factor;
+    }
+    
+    function netTotal(funds, feePercent) {
+      return precisionRounding(funds * feePercent, 2);
+    }
+  })(global.MyIIFE || (global.MyIIFE = {}));
+  
+  it('should calculate netTotal', function() {
+    const myObject = new global.MyIIFE.domain.MyObject('sender', 'receiver', 100.0);
+    assert.equal(myObject.netTotal, 60.0); 
+  });
 });
