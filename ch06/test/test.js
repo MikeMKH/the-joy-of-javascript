@@ -15,7 +15,7 @@ const curry = fn => (...args1) =>
       : curry(fn)(...args);
 };
 
-describe('define class in an object namespace', function() {
+describe('class in an object namespace', function() {
   let MyObjectClass = global.MyObjectClass || {};
   MyObjectClass.domain = {};
   
@@ -72,5 +72,38 @@ describe('IIFE', function() {
   it('should calculate netTotal', function() {
     const myObject = new global.MyIIFE.domain.MyObject('sender', 'receiver', 100.0);
     assert.equal(myObject.netTotal, 60.0); 
+  });
+}),
+describe('factory function', function() {
+  function MyObjectService(myObject) {
+    const feePercent = 0.6;
+    
+    function precisionRounding(number, precision) {
+      const factor = Math.pow(10, precision);
+      return Math.round(number * factor) / factor;
+    }
+    
+    function netTotal() {
+      return precisionRounding(myObject.funds * feePercent, 2);
+    }
+    
+    return {
+      netTotal
+    };
+  }
+  
+  const MyObject = class {
+    constructor(sender, receiver, funds = 0.0) {
+      this.sender = sender;
+      this.receiver = receiver;
+      this.funds = Number(funds);
+      this.timestamp = Date.now();
+    }
+  };
+  
+  it('should calculate netTotal', function() {
+    const myObject = new MyObject('sender', 'receiver', 100.0);
+    const service = new MyObjectService(myObject);
+    assert.equal(service.netTotal(), 60.0);
   });
 });
