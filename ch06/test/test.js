@@ -1,5 +1,6 @@
 const { equal } = require('assert');
-var assert = require('assert');
+const assert = require('assert');
+
 const compose2 = (f, g) => (...args) => f(g(...args));
 const compose = (...fns) => fns.reduce(compose2);
 const composeM2 = (f, g) => (...args) => g(...args).flatMap(f);
