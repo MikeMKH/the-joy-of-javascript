@@ -1,3 +1,4 @@
+// mocha watch does not support esm modules https://github.com/mochajs/mocha/issues/4374
 const { equal } = require('assert');
 const assert = require('assert');
 
