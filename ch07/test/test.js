@@ -16,8 +16,58 @@ const curry = fn => (...args1) =>
       : curry(fn)(...args);
 };
 
-describe('Chapter 7', () => {
-  it('should work', () => {
-    assert.ok(true);
-  });
+describe('7.1', () => {
+  it('eval', () => {
+    let result = 0;
+    const code = `
+      const add = (x, y) => x + y;
+      result = add(1, 2);
+    `;
+    eval(code);
+    assert.equal(result, 3);
+  }),
+  it('property name', () => {
+    const propName = 'foo';
+    const identity = x => x;
+    const obj = {
+      bar: 10,
+      [identity(propName)]: 20
+    };
+    assert.equal(obj.foo, 20);
+  }),
+  describe('metaprogramming', () => {
+    const proto = {
+      foo: 10,
+      bar: function() { return 'hello'; },
+      [Symbol('private')]: 'private data'      
+    };
+    
+    const obj = Object.create(proto);
+    obj.baz = 20;
+    
+    it('getOwnPropertyNames', () => {
+      const names = Object.getOwnPropertyNames(obj);
+      assert.deepEqual(names, ['baz']);
+    }),
+    it('getOwnPropertySymbols', () => {
+      assert.deepEqual(
+        Object.getOwnPropertySymbols(obj),
+        []);
+      assert.equal(
+        Object.getOwnPropertySymbols(proto)[0].toString(),
+        Symbol('private').toString());
+    }),
+    it('getOwnPropertyDescriptor', () => {
+      const desc = Object.getOwnPropertyDescriptor(obj, 'baz');
+      assert.deepEqual(desc, {
+        value: 20,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+    }),
+    it('getPrototypeOf', () => {
+      assert.equal(Object.getPrototypeOf(obj), proto);
+    });
+  })
 });
