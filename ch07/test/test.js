@@ -70,4 +70,24 @@ describe('7.1', () => {
       assert.equal(Object.getPrototypeOf(obj), proto);
     });
   })
-});
+}),
+describe('7.2', () => {
+  describe('Symbol', () => {
+    it('should not have Symbol equal each other', () => {
+      const s1 = Symbol();
+      const s2 = Symbol();
+      assert.notEqual(s1, s2);
+    }),
+    it('should have descriptions equal to each other', () => {
+      const s1 = Symbol('foo');
+      const s2 = Symbol('foo');
+      assert.equal(s1.description, s2.description);
+    }),
+    it('should be usable as property keys', () => {
+      const obj = {};
+      const s = Symbol('value');
+      obj[s] = 10;
+      assert.equal(obj[s], 10);
+    });
+  });
+})
