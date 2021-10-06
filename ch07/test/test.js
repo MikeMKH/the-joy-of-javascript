@@ -90,4 +90,28 @@ describe('7.2', () => {
       assert.equal(obj[s], 10);
     });
   });
+}),
+describe('7.3', () => {
+  describe('local registry', () => {
+    it('should be scoped to the function it is declared in', () => {
+      function foo() {
+        const s = Symbol('foo');
+        assert.equal(typeof s, 'symbol');
+        assert.equal(s.description, 'foo');
+      }
+      foo();
+    });
+  }),
+  describe('global registry', () => {
+    it('should be shared across all scopes', () => {
+      const s1 = Symbol.for('foo');
+      let s2 = null;
+      
+      (function foo() {
+        s2 = Symbol.for('foo');
+      })();
+      
+      assert.equal(s1, s2);
+    });
+  });
 })
