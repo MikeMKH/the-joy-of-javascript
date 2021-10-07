@@ -114,4 +114,36 @@ describe('7.3', () => {
       assert.equal(s1, s2);
     });
   });
+}),
+describe('7.4', () => {
+  describe('hidden properties', () => {
+    const _count = Symbol('count');
+    class Counter {
+      constructor() {
+        Object.defineProperty(this, _count, {
+          enumerable: false,
+          writable: true
+        });
+        this[_count] = 0;
+      }
+      increment() {
+        this[_count] += 1;
+      }
+      get count() {
+        return this[_count];
+      }
+    };
+    it('should count', () => {
+      const counter = new Counter();
+      counter.increment();
+      assert.equal(counter.count, 1);
+      counter.increment();
+      assert.equal(counter.count, 2);
+    }),
+    it('should hide _count', () => {
+      const counter = new Counter();
+      assert.deepEqual(Object.keys(counter), []);
+      assert.deepEqual(Object.getOwnPropertyNames(counter), []);
+    })
+  })
 })
