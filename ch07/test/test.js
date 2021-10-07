@@ -145,5 +145,51 @@ describe('7.4', () => {
       assert.deepEqual(Object.keys(counter), []);
       assert.deepEqual(Object.getOwnPropertyNames(counter), []);
     })
+  }),
+  describe('versioning objects', () => {
+    const VERSION = '1.0';
+    class Versioned {
+      get [Symbol.for('version')]() {
+        return VERSION;
+      }
+    };
+    
+    it('should have a version', () => {
+      const versioned = new Versioned();
+      assert.equal(versioned[Symbol.for('version')], VERSION);
+    }),
+    it('should be able to change the version', () => {
+      const versioned = new Versioned();
+      const newVersion = '1.1';
+      Object.defineProperty(versioned, Symbol.for('version'), {
+        value: newVersion,
+        writable: true
+      });
+      assert.equal(versioned[Symbol.for('version')], newVersion);
+    }),
+    it('should be able to change functionality based on version', () => {
+      function foo(versioned) {
+        let result = 0;
+        switch (versioned[Symbol.for('version')]) {
+          case '1.0':
+            result = 1;
+            break;
+          case '1.1':
+            result = 2;
+            break;
+          default:
+            result = -1;
+        }
+        return result;
+      }
+      const versioned = new Versioned();
+      assert.equal(foo(versioned), 1);
+      
+      Object.defineProperty(versioned, Symbol.for('version'), {
+        value: '1.1',
+        writable: true
+      });
+      assert.equal(foo(versioned), 2);
+    });
   })
 })
