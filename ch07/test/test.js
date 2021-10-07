@@ -191,5 +191,24 @@ describe('7.4', () => {
       });
       assert.equal(foo(versioned), 2);
     });
-  })
-})
+  }),
+  describe('serialization', () => {
+    class Serializable {
+      constructor() {
+        this.foo = 'foo';
+        this.bar = 'bar';
+      }
+      [Symbol.for('toJson')]() {
+        return JSON.stringify({
+          foo: this.foo,
+          bar: this.bar
+        });
+      }
+    }
+    
+    it('should serialize', () => {
+      const serializable = new Serializable();
+      assert.equal(serializable[Symbol.for('toJson')](), '{"foo":"foo","bar":"bar"}');
+    });
+  });
+});
