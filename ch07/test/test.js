@@ -264,6 +264,40 @@ describe('7.5', () => {
         const p = new Pair(1, 2);
         assert.deepEqual(p.map(x => x * 2), [2, 4]);
       });
-    })
+    });
+  }),
+  describe('@@species', () => {
+    it('should allow for a constructor to be specified', () => {
+      class MyArray extends Array {
+        static get [Symbol.species]() {
+          return Array;
+        }
+      }
+      const myArray = new MyArray();
+      assert.equal(myArray.toString(), []);
+      assert.equal(MyArray[Symbol.species], Array);
+    });
+    describe('EvensOnly', () => {
+      class EvensOnly extends Array {
+        constructor(...args) {
+          super();
+          args.filter(x => x % 2 === 0).forEach(x => this.push(x));
+        }
+        
+        static get [Symbol.species]() {
+          return Array;
+        }
+      }
+      
+      it('should only contain evens', () => {
+        const evensOnly = new EvensOnly(1, 2, 3, 4);
+        assert.deepEqual(evensOnly, [2, 4]);
+      }),
+      it('should be able to concat with only evens', () => {
+        const evensOnly = new EvensOnly(1, 2, 3, 4);
+        const other = new EvensOnly(5, 6);
+        assert.deepEqual(evensOnly.concat(other), [2, 4, 6]);
+      });
+    });
   })
 })
