@@ -211,4 +211,28 @@ describe('7.4', () => {
       assert.equal(serializable[Symbol.for('toJson')](), '{"foo":"foo","bar":"bar"}');
     });
   });
-});
+}),
+describe('7.5', () => {
+  describe('@@toStringTag', () => {
+    it('should return the name given', () => {
+      class MyClass {
+        get [Symbol.toStringTag]() {
+          return 'Foo';
+        }
+      }
+      const myClass = new MyClass();
+      assert.equal(myClass.toString(), '[object Foo]');
+    }),
+    it('should allow for an object to be named', () => {
+      function MyObjectService() {
+        return {
+          [Symbol.toStringTag]: 'Bar',
+          foo: 'foo',
+          bar: 'bar'
+        }
+      }
+      const myObject = new MyObjectService();
+      assert.equal(myObject.toString(), '[object Bar]');
+    });
+  })
+})
