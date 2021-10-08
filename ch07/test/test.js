@@ -234,5 +234,36 @@ describe('7.5', () => {
       const myObject = new MyObjectService();
       assert.equal(myObject.toString(), '[object Bar]');
     });
+  }),
+  describe('@@isConcatSpreadable', () => {
+    it('should allow for an array to not spread on concat', () => {
+      const numbers = [1, 2, 3];
+      const letters = ['a', 'b', 'c'];
+      assert.deepEqual(numbers.concat(letters), [1, 2, 3, 'a', 'b', 'c']);
+      letters[Symbol.isConcatSpreadable] = false;
+      assert.deepEqual(numbers.concat(letters), [1, 2, 3, ['a', 'b', 'c']]);
+    }),
+    describe('Pair', () => {
+      class Pair extends Array {
+        constructor(left, right) {
+          super();
+          this[0] = left;
+          this[1] = right;
+        }
+        get [Symbol.isConcatSpreadable]() {
+          return false;
+        }
+      }
+      
+      it('should concat as two arrays', () => {
+        const pair1 = new Pair(1, 2);
+        const pair2 = new Pair(3, 4);
+        assert.deepEqual(pair1.concat(pair2), [[1, 2], [3, 4]]);
+      }),
+      it('should allow for map', () => {
+        const p = new Pair(1, 2);
+        assert.deepEqual(p.map(x => x * 2), [2, 4]);
+      });
+    })
   })
 })
