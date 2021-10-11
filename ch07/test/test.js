@@ -336,6 +336,47 @@ describe('7.5', () => {
         assert.equal(myClass + '', 'foo bar');
       });
     });
-  })
-  
+  }),
+  describe('@@iterator', () => {
+    it('should be able to iterate', () => {
+      class MyArray {
+        [Symbol.iterator]() {
+          let i = 0;
+          return {
+            next: function() {
+              return {
+                done: i === 3,
+                value: i++
+              };
+            }
+          };
+        }
+      }
+      const myArray = new MyArray();
+      let values = [];
+      for(let x of myArray) {
+        values.push(x);
+      }
+      assert.deepEqual(values, [0, 1, 2]);
+    }),
+    describe('Pair', () => {
+      const Pair = (left, right) => ({
+        left: left,
+        right: right,
+        [Symbol.iterator]: function* () {
+          yield this.left;
+          yield this.right;
+        }
+      });
+      const pair = Pair(1, 2);
+      
+      it('should iterate', () => {
+        let values = [];
+        for(let x of pair) {
+          values.push(x);
+        }
+        assert.deepEqual(values, [1, 2]);
+      });
+    });
+  });
 });
