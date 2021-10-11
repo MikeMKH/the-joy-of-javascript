@@ -299,5 +299,43 @@ describe('7.5', () => {
         assert.deepEqual(evensOnly.concat(other), [2, 4, 6]);
       });
     });
+  }),
+  describe('@@toPrimitive', () => {
+    describe('Date', () => {
+      var date = new Date(2021, 10, 9); // Lily's got you day
+      it('should use toString for concat', () => {
+        assert.equal(
+          `Date is ${date}`,
+          'Date is Tue Nov 09 2021 00:00:00 GMT-0600 (Central Standard Time)');
+      }),
+      it('should use valueOf for addition', () => {
+        assert.equal(+date, 1636437600000);
+      })
+    }),
+    describe('adding to class', () => {
+      class MyClass {
+        constructor() {
+          this.foo = 'foo';
+          this.bar = 'bar';
+        }
+        [Symbol.toPrimitive](hint) {
+          switch (hint) {
+            case 'number':
+              return 42;
+            default:
+              return `${this.foo} ${this.bar}`;
+          }
+        }
+      }
+      
+      const myClass = new MyClass();
+      it('should return 42 for number', () => {
+        assert.equal(+myClass, 42);
+      }),
+      it('should return foo bar for string', () => {
+        assert.equal(myClass + '', 'foo bar');
+      });
+    });
   })
-})
+  
+});
