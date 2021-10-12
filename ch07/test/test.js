@@ -378,5 +378,58 @@ describe('7.5', () => {
         assert.deepEqual(values, [1, 2]);
       });
     });
+  }),
+  describe('7.6', () => {
+    describe('Proxy', () => {
+      let log = [];
+      const loggerHandler = {
+        get: function(target, key) {
+          log.push(`get ${key} on ${target}`);
+          return target[key];
+        }
+      };
+      
+      it('should be able to log', () => {
+        const obj = {
+          foo: 'foo',
+          bar: 'bar',
+          [Symbol.toStringTag]: 'FooBar'
+        };
+        const proxy = new Proxy(obj, loggerHandler);
+        assert.equal(proxy.foo, 'foo');
+        assert.equal(proxy.bar, 'bar');
+        assert.deepEqual(log, ['get foo on [object FooBar]', 'get bar on [object FooBar]']);
+      });
+    }),
+    describe('Reflect', () => {
+      it('should be able to define a property', () => {
+        const obj = {};
+        Reflect.defineProperty(obj, 'foo', {
+          value: 'foo',
+          writable: true,
+          enumerable: true,
+          configurable: true
+        });
+        assert.equal(obj.foo, 'foo');
+      }),
+      it('should be able to simplify Proxy code', () => {
+        const obj = {};
+        let log = [];
+        const proxy = new Proxy(obj, {
+          get: function(...args) {
+            log.push(`get ${args[1]} on ${args[0]}`);
+            return Reflect.get(...args);
+          },
+          set: function(target, key, value) {
+            log.push(`set ${key} on ${target} to ${value}`);
+            target[key] = value;
+            return true;
+          }
+        });
+        proxy.foo = 'foo';
+        assert.equal(proxy.foo, 'foo');
+        assert.deepEqual(log, ['set foo on [object Object] to foo', 'get foo on [object Object]']);
+      })
+    });
   });
 });
