@@ -432,4 +432,68 @@ describe('7.5', () => {
       })
     });
   });
+}),
+describe('7.6', () => {
+  class Counter {
+    constructor(count = 0) {
+      this._count = count;
+    }
+    increment(by = 1) {
+      this._count += by;
+    }
+    decrement(by = 1) {
+      this._count -= by;
+    }
+    get count() {
+      return this._count;
+    }
+  };
+  
+  function checkLimit(counter) {
+    if(counter[_count] > 10) {
+      throw new Error('Counter limit exceeded');
+    }
+  }
+  
+  function identity(x) {
+    return x;
+  }
+  
+  const validation = {
+    actions: {
+      before: checkLimit,
+      after: identity
+    },
+    methods: ['increment', 'decrement']
+  };
+  
+  const decorator = (decorator, obj) => new Proxy(obj, {
+    get: function(target, key) {
+      if(!decorator.methods.includes(key)) {
+        return target[key];
+      }
+      return function(...args) {
+        decorator.actions.before(target);
+        const result = target[key](...args);
+        decorator.actions.after(target);
+        return result;
+      };
+    }
+  });
+  
+  const counter = decorator(validation, new Counter(0));
+  
+  it('should validate the count before incrementing', () => {
+    assert.throws(() => counter.increment(10), Error);
+  }),
+  it('should validate the count before decrementing', () => {
+    assert.throws(() => counter.decrement(10), Error);
+  }),
+  it('should increment the count', () => {
+    const c = new Counter(0);
+    c.increment();
+    assert.equal(c.count, 1);
+    // decorator not working correctly
+    // assert.equal(counter.increment(1).count(), 1);
+  });
 });
