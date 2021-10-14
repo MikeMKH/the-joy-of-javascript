@@ -16,8 +16,25 @@ const curry = fn => (...args1) =>
       : curry(fn)(...args);
 };
 
-describe('8.1', () => {
-  it('should work', () => {
-    assert.ok(true)
-  })
+describe('8.2', () => {
+  describe('Promise', () => {
+    it('should be able to assert using return', () => {
+      const f = x => Promise.resolve(x + 1);
+      return f(1).then(
+        result => assert.equal(result, 2));
+    }),
+    it('should be able to assert using done', done => {
+      const f = x => Promise.resolve(x + 1);
+      f(1).then(
+        result => {
+          assert.equal(result, 2);
+          done();
+        });
+    }),
+    it('should be able to assert using async', async () => {
+      const f = x => Promise.resolve(x + 1);
+      const result = await f(1);
+      assert.equal(result, 2);
+    });
+  });
 });
