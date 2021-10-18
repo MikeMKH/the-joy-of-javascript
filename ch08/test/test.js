@@ -59,6 +59,50 @@ describe('8.2', () => {
         return Promise.all([x, y]).then(
           results => assert.deepEqual(results, ['Lily!', 'Lily!']));
       })
+    }),
+    it('should be chainable', () => {
+      const result = Promise.resolve(42)
+        .then(x => x**2)
+        .then(x => x * 3)
+        .then(x => x + 7);
+      return Promise.all([result]).then(
+        results => assert.deepEqual(results[0], 42**2 * 3 + 7));
+    }),
+    it('should be able to nestable', () => {
+      const unique = letters => Array.from(new Set([...letters]))
+      const join = arr => Array.from(arr).join('');
+      const toUpperCase = str => str.toUpperCase();
+      const concat = arr1 => arr2 => arr1.concat(arr2);
+      
+      const result = Promise.resolve('aabbcc')
+        .then(unique)
+        .then(abc =>
+          Promise.resolve('ddeeff')
+            .then(unique)
+            .then(def => abc.concat(def))
+        )
+        .then(join)
+        .then(toUpperCase);
+      return Promise.all([result]).then(
+        results => assert.deepEqual(results[0], 'ABCDEF'));
+    }),
+    it('should catch errors', () => {
+      let wasCalled = {
+        then: false,
+        catch: false
+      };
+      const result = Promise.resolve(42)
+        .then(() => { throw new Error('oops') })
+        .then(x => { wasCalled.then = true; return x })
+        .catch(() => { wasCalled.catch = true; return 'caught' });
+      return Promise.all([result]).then(
+        results => {
+          assert.deepEqual(results[0], 'caught');
+          assert.deepEqual(wasCalled, {
+            then: false,
+            catch: true
+          });
+        });
     })
   });
 });
