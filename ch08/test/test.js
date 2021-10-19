@@ -1,5 +1,6 @@
 const { equal } = require('assert');
 const assert = require('assert');
+const { resolve } = require('path');
 
 const compose2 = (f, g) => (...args) => f(g(...args));
 const compose = (...fns) => fns.reduce(compose2);
@@ -103,6 +104,72 @@ describe('8.2', () => {
             catch: true
           });
         });
-    })
+    });
   });
 });
+
+describe('8.3', () => {
+  describe('Promise', () => {
+    describe('#all', () => {
+      it('should wait on all before returning', () => {
+        const x = Promise.resolve(1);
+        const y = Promise.resolve(2);
+        const z = Promise.resolve(3);
+        return Promise.all([x, y, z]).then(
+          results => assert.deepEqual(results, [1, 2, 3]));
+      }),
+      it('should reject when one is in error', () => {
+        const x = Promise.resolve(1);
+        const y = Promise.resolve(2);
+        const z = Promise.reject(new Error('oops'));
+        return Promise.all([x, y, z]).catch(
+          err => assert.equal(err.message, 'oops'));
+      });
+    }),
+    describe('#race', () => {
+      it('should get result of the first one done', () => {
+        const x = Promise.resolve(1);
+        const y = Promise.resolve(2);
+        const z = Promise.resolve(3);
+        return Promise.race([x, y, z]).then(
+          result => assert.equal(1, result));
+      });
+    }),
+    describe('#allSettled', () => {
+      it('should wait on all before returning', () => {
+        const x = Promise.resolve(1);
+        const y = Promise.resolve(2);
+        const z = Promise.resolve(3);
+        return Promise.allSettled([x, y, z]).then(
+          results => assert.deepEqual(results,
+            [{status: "fulfilled", value: 1},
+             {status: "fulfilled", value: 2},
+             {status: "fulfilled", value: 3}]));
+      }),
+      it('should reject when one is in error', () => {
+        const x = Promise.resolve(1);
+        const y = Promise.resolve(2);
+        const z = Promise.reject(new Error('oops'));
+        return Promise.allSettled([x, y, z]).then(
+          results => {
+            assert.deepEqual(
+              results.filter(x => x.status === 'fulfilled'),
+              [{status: "fulfilled", value: 1}, {status: "fulfilled", value: 2}]);
+            assert.equal(results[2].status, 'rejected');
+            assert.equal(results[2].reason.message, 'oops');
+          });
+      });
+      // }),
+      // not supported in node version I am using
+      // TypeError: Promise.any is not a function
+      // describe('#any', () => {
+        //   it('should get result of first one done', () => {
+          //     const x = Promise.resolve(1);
+          //     const y = Promise.resolve(2);
+          //     const z = Promise.resolve(3);
+          //     return Promise.any([x, y, z]).then(
+    //       result => assert.equal(1, result));
+    //   });
+    });
+  })
+})
