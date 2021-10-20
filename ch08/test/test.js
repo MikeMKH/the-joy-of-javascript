@@ -171,5 +171,42 @@ describe('8.3', () => {
     //       result => assert.equal(1, result));
     //   });
     });
+  });
+});
+
+describe('8.4', () => {
+  describe('async / await', () => {
+    it('should wait until all are done', async () => {
+      const x = async () => 1;
+      const y = async () => 2;
+      const z = async () => 3;
+      const result = await Promise.all([x(), y(), z()]);
+      assert.deepEqual(result, [1, 2, 3]);
+    }),
+    it('should reject when one is in error', async () => {
+      const x = async () => 1;
+      const y = async () => 2;
+      const z = async () => { throw new Error('oops') };
+      try {
+        await Promise.all([x(), y(), z()]);
+      } catch (err) {
+        assert.equal(err.message, 'oops');
+      }
+    }),
+    it('should be able to nest', async () => {
+      const x = async () => 1;
+      const y = async () => 2;
+      const z = async () => (async () => 3)();
+      const result = await Promise.all([x(), y(), z()]);
+      assert.deepEqual(result, [1, 2, 3]);
+    }),
+    it('should be able to process in a sequence', async () => {
+      const f = x => async y => (x + y);
+      const add1 = f(1);
+      const a = await add1(8);
+      const b = await add1(a);
+      const c = await add1(b);
+      assert.equal(c, 8 + 1 + 1 + 1);
+    })
   })
 })
