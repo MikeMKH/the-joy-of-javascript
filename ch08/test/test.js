@@ -207,6 +207,73 @@ describe('8.4', () => {
       const b = await add1(a);
       const c = await add1(b);
       assert.equal(c, 8 + 1 + 1 + 1);
+    });
+  });
+});
+
+describe('8.5', () => {
+  const delay = (value, time) => new Promise(
+    resolve => setTimeout(() => resolve(value), time));
+    
+  describe('async iterator', () => {
+    it('should iterate', async () => {
+      const iter = async function* () {
+        yield await delay(1, 10);
+        yield await delay(2, 20);
+        yield await delay(3, 30);
+      };
+      
+      const result = [];
+      for await (const value of iter()) {
+        result.push(value);
+      }
+      assert.deepEqual(result, [1, 2, 3]);
+    }),
+    it('should be able to iterate in a sequence', async () => {
+      const iter = async function* () {
+        yield await delay(1, 40);
+        yield await delay(2, 10);
+        yield await delay(3, 30);
+        yield await delay(4, 20);
+      };
+      
+      const result = [];
+      for await (const value of iter()) {
+        result.push(value);
+      }
+      assert.deepEqual(result, [1, 2, 3, 4]);
+    });
+  }),
+  describe('@@asyncIterable', () => {
+    it('should iterate', async () => {
+      const iter = {
+        [Symbol.asyncIterator]: async function* () {
+          yield await delay(1, 10);
+          yield await delay(2, 20);
+          yield await delay(3, 30);
+        }
+      };
+      
+      const result = [];
+      for await (const value of iter) {
+        result.push(value);
+      }
+      assert.deepEqual(result, [1, 2, 3]);
+    }),
+    it('should iterate in sequence', async () => {
+      const iter = {
+        [Symbol.asyncIterator]: async function* () {
+          yield await delay(1, 30);
+          yield await delay(2, 10);
+          yield await delay(3, 20);
+        }
+      };
+      
+      const result = [];
+      for await (const value of iter) {
+        result.push(value);
+      }
+      assert.deepEqual(result, [1, 2, 3]);
     })
-  })
+  });
 })
