@@ -274,6 +274,25 @@ describe('8.5', () => {
         result.push(value);
       }
       assert.deepEqual(result, [1, 2, 3]);
-    })
+    });
   });
-})
+});
+
+describe('8.6', () => {
+  describe('top-level await', () => {
+    it('should be an IIAFE', () => {
+      return (async () => {
+        await Promise.resolve(1)
+          .then(x => assert.equal(1, x));
+      })();
+    }),
+    it('should be able to nest', () => {
+      return (async () => {
+        await (async () => {
+          await Promise.resolve(1)
+            .then(x => assert.equal(1, x));
+        })();
+      })();
+    });
+  });
+});
