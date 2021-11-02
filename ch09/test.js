@@ -1,4 +1,3 @@
-const { equal } = require('assert');
 const assert = require('assert');
 
 const compose2 = (f, g) => (...args) => f(g(...args));
@@ -16,8 +15,38 @@ const curry = fn => (...args1) =>
       : curry(fn)(...args);
 };
 
-describe('9.0', () => {
-  it('should work', () => {
-    assert.ok(compose(Math.sqrt, Math.pow)(2, 2) === 2);
+describe('9.1', () => {
+  describe('iterator protocol', () => {
+    describe('iterator example', () => {
+      it('should return an iterator', () => {
+        const values = [1, 2, 3];
+        const iterator = values[Symbol.iterator](); // not well formed
+        
+        assert.equal(typeof iterator, 'object');
+        assert.equal(iterator.next().value, 1);
+        assert.equal(iterator.next().value, 2);
+        assert.equal(iterator.next().value, 3);
+        assert.equal(iterator.next().done, true);
+      }),
+      it('should support for of', () => {
+        const iterator = "Lily"[Symbol.iterator]();
+        
+        const result = [];
+        for (const value of iterator) {
+          result.push(value);
+        }
+        assert.equal(result.join(""), "Lily");
+      }),
+      it('should support for of with map', () => {
+        const iterator = {};
+        iterator[Symbol.iterator] = function* () {
+          yield 1;
+          yield 2;
+          yield 3;
+        };
+        
+        assert.deepEqual([...iterator], [1, 2, 3]);
+      })
+    })
   })
 })
