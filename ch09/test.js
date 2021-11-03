@@ -46,7 +46,74 @@ describe('9.1', () => {
         };
         
         assert.deepEqual([...iterator], [1, 2, 3]);
-      })
-    })
-  })
+      });
+    });
+  });
+}),
+describe('9.2', () => {
+  describe('generators', () => {
+    it('should be of type Object [Generator]', () => {
+      const generator = function* () {
+        return "hello";
+      };
+      
+      assert.equal(typeof generator(), 'object');
+      assert.equal(typeof generator, 'function');
+      assert.equal(generator.constructor.name, 'GeneratorFunction');
+    }),
+    it('should be iterable', () => {
+      const generator = function* () {
+        yield 1;
+        yield 2;
+        yield 3;
+      };
+      
+      assert.deepEqual([generator().next()], [{value: 1, done: false}]);
+      assert.deepEqual([...generator()], [1, 2, 3]);
+    }),
+    it('should implement the iterator protocol', () => {
+      const f = function* () {
+        yield "hello";
+        yield "Lily";
+      };
+      
+      const it = f();
+      assert.deepEqual(it.next(), {value: "hello", done: false});
+      assert.deepEqual(it.next(), {value: "Lily", done: false});
+    });
+  }),
+  describe('async generators', () => {
+    it('should be of type Object [AsyncGenerator]', () => {
+      const asyncGenerator = async function* () {
+        return "hello";
+      };
+      
+      assert.equal(typeof asyncGenerator(), 'object');
+      assert.equal(typeof asyncGenerator, 'function');
+      assert.equal(asyncGenerator.constructor.name, 'AsyncGeneratorFunction');
+    }),
+    it('should be iterable', async () => {
+      const asyncGenerator = async function* () {
+        yield 1;
+        yield 2;
+        yield 3;
+      };
+      
+      const result = [];
+      for await(const value of asyncGenerator()) {
+        result.push(value);
+      }
+      assert.deepEqual(result, [1, 2, 3]);
+    }),
+    it('should implement the iterator protocol', async () => {
+      const f = async function* () {
+        yield "hello";
+        yield "Lily";
+      };
+      
+      const it = f();
+      assert.deepEqual(await it.next(), {value: "hello", done: false});
+      assert.deepEqual(await it.next(), {value: "Lily", done: false});
+    });
+  });
 })
