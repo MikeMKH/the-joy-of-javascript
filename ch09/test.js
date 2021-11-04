@@ -1,4 +1,5 @@
 const assert = require('assert');
+const { EventEmitter } = require('stream');
 
 const compose2 = (f, g) => (...args) => f(g(...args));
 const compose = (...fns) => fns.reduce(compose2);
@@ -116,4 +117,36 @@ describe('9.2', () => {
       assert.deepEqual(await it.next(), {value: "Lily", done: false});
     });
   });
+}),
+describe('9.3', () => {
+  describe('pull', () => {
+    const producer = function* () {
+      yield 1;
+      yield 2;
+      yield 3;
+    };
+    it('should allow for consumers to pull values from it', () => {
+      const consumer = [];
+      
+      for (const value of producer()) {
+        consumer.push(value);
+      }
+      
+      assert.deepEqual(consumer, [1, 2, 3]);
+    });
+  }),
+  describe('push', () => {
+    const producer = new EventEmitter();
+    const EVENT = 'Lily is a good girl';
+    it('should allow for consumers to be pushed values from it', () => {
+      const consumer = [];
+      producer.on(EVENT, value => consumer.push(value));
+      
+      producer.emit(EVENT, 1);
+      producer.emit(EVENT, 2);
+      producer.emit(EVENT, 3);
+      
+      assert.deepEqual(consumer, [1, 2, 3]);
+    })
+  })
 })
